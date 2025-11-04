@@ -12,7 +12,11 @@ This guide provides complete steps to enable AWS Application Signals for ECS Far
 **Constraints:**
 You must strictly follow the steps in the order below, do not skip or combine steps.
 
-### Step 1: Add CloudWatch Agent Permissions to ECS Task Role
+### Step 1: Setup CloudWatch Agent Task
+When running in ECS, the CloudWatch Agent is deployed as a sidecar container next to the application container.
+Proper permissions, a CWAgentConfig configuration file, and the target log group must be set up to enable logging and metrics collection.
+
+#### 1.1 Add CloudWatch Agent Permissions to ECS Task Role
 
 Update ECS task role to add CloudWatchAgentServerPolicy:
 
@@ -30,12 +34,7 @@ const taskRole = new iam.Role(this, 'EcsTaskRole', {
 });
 ```
 
-### Step 2: Setup CloudWatch Agent Task
-When running in ECS, the CloudWatch Agent is deployed as a sidecar container next to the application container.
-Proper permissions, a CWAgentConfig configuration file, and the target log group must be set up to enable logging and metrics collection.
-
-
-#### 2.1 Create CloudWatch Agent Log Group
+#### 1.2 Create CloudWatch Agent Log Group
 ```typescript
 const cwAgentLogGroup = new logs.LogGroup(this, 'CwAgentLogGroup', {
   logGroupName: '/ecs/ecs-cwagent',
@@ -44,7 +43,7 @@ const cwAgentLogGroup = new logs.LogGroup(this, 'CwAgentLogGroup', {
 });
 ```
 
-#### 2.2 Add CloudWatch Agent Container to Each Task Definition
+#### 1.3 Add CloudWatch Agent Container to Each Task Definition
 ```typescript
 // Add CloudWatch Agent sidecar to each task definition
 const cwAgentContainer = taskDefinition.addContainer('ecs-cwagent-{SERVICE_NAME}', {
@@ -73,9 +72,9 @@ const cwAgentContainer = taskDefinition.addContainer('ecs-cwagent-{SERVICE_NAME}
 });
 ```
 
-### Step 3: Add ADOT Zero-Code Instrumentation to Main Service
+### Step 2: Add AWS Distro of OpenTelemetry Zero-Code Instrumentation to Main Service
 
-#### 3.1 Add Bind Mount Volumes to Task Definition
+#### 2.1 Add Bind Mount Volumes to Task Definition
 ```typescript
 const taskDefinition = new ecs.FargateTaskDefinition(this, '{SERVICE_NAME}TaskDefinition', {
   // Existing configuration...
@@ -87,7 +86,7 @@ const taskDefinition = new ecs.FargateTaskDefinition(this, '{SERVICE_NAME}TaskDe
 });
 ```
 
-#### 3.2 Add ADOT Auto-instrumentation Init Container
+#### 2.2 Add ADOT Auto-instrumentation Init Container
 ```typescript
 const initContainer = taskDefinition.addContainer('init', {
   image: ecs.ContainerImage.fromRegistry('public.ecr.aws/aws-observability/adot-autoinstrumentation-java:v2.20.0'),
@@ -109,7 +108,7 @@ initContainer.addMountPoints({
 });
 ```
 
-#### 3.3 Configure Main Application Container OpenTelemetry Environment Variables
+#### 2.3 Configure Main Application Container OpenTelemetry Environment Variables
 
 ##### Java Application Configuration:
 ```typescript
@@ -119,7 +118,6 @@ const mainContainer = taskDefinition.addContainer('{SERVICE_NAME}-container', {
     // Existing environment variables...
     
     // ADOT Configuration for Application Signals
-    OTEL_RESOURCE_ATTRIBUTES: 'service.name={SERVICE_NAME},deployment.environment=ecs-fargate,team.name={TEAM_NAME},business.unit={BUSINESS_UNIT},app={APP_NAME}',
     OTEL_METRICS_EXPORTER: 'none',
     OTEL_LOGS_EXPORTER: 'none',
     JAVA_TOOL_OPTIONS: ' -javaagent:/otel-auto-instrumentation-java/javaagent.jar',
@@ -132,7 +130,7 @@ const mainContainer = taskDefinition.addContainer('{SERVICE_NAME}-container', {
 });
 ```
 
-#### 3.4 Add Mount Point to Main Container
+#### 2.4 Add Mount Point to Main Container
 ```typescript
 // Add mount point to main application container
 mainContainer.addMountPoints({
@@ -142,7 +140,7 @@ mainContainer.addMountPoints({
 });
 ```
 
-#### 3.5 Configure Container Dependencies
+#### 2.5 Configure Container Dependencies
 ```typescript
 // Ensure containers start in correct order
 mainContainer.addContainerDependencies({
