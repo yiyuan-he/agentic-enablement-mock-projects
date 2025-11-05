@@ -118,6 +118,7 @@ const mainContainer = taskDefinition.addContainer('{SERVICE_NAME}-container', {
     // Existing environment variables...
     
     // ADOT Configuration for Application Signals
+    OTEL_RESOURCE_ATTRIBUTES: 'service.name={SERVICE_NAME}', // SERVICE_NAME is defined by user
     OTEL_METRICS_EXPORTER: 'none',
     OTEL_LOGS_EXPORTER: 'none',
     JAVA_TOOL_OPTIONS: ' -javaagent:/otel-auto-instrumentation-java/javaagent.jar',
