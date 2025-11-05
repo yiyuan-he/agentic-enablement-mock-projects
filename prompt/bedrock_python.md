@@ -11,7 +11,7 @@ A practical guide for enabling OpenTelemetry instrumentation in Python-based AWS
 Add X-Ray permissions to the Bedrock Agent Core IAM execution role.
 
 #### **Find existing X-Ray permission policy:**
-```python
+```typescript
 iam.PolicyStatement(
     effect=iam.Effect.ALLOW,
     actions=[
@@ -24,7 +24,7 @@ iam.PolicyStatement(
 ```
 
 #### **Add `xray:PutTraceSegments` permission:**
-```python
+```typescript
 iam.PolicyStatement(
     effect=iam.Effect.ALLOW,
     actions=[
@@ -103,6 +103,64 @@ CMD ["opentelemetry-instrument", "uvicorn", "main:app", "--host=0.0.0.0"]
 # Direct Python file execution
 CMD ["opentelemetry-instrument", "python", "app.py"]
 ```
+
+---
+
+### Step 4: Enable CloudWatch OTLP trace endpoint
+
+OpenTelemetry trace data is sent to the CloudWatch OTLP trace endpoint, which requires enabling the Transaction Search feature.
+
+#### **Find existing X-Ray permission policy:**
+```typescript
+import * as cdk from '@aws-cdk/core';
+import * as logs from '@aws-cdk/aws-logs';
+import * as xray from '@aws-cdk/aws-xray';
+
+export class XRayTransactionSearchStack extends cdk.Stack {
+  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // Create the resource policy
+    const transactionSearchAccess = new logs.CfnResourcePolicy(this, 'XRayLogResourcePolicy', {
+      policyName: 'TransactionSearchAccess',
+      policyDocument: JSON.stringify({
+        Version: '2012-10-17',		 	 	 
+        Statement: [
+          {
+            Sid: 'TransactionSearchXRayAccess',
+            Effect: 'Allow',
+            Principal: {
+              Service: 'xray.amazonaws.com',
+            },
+            Action: 'logs:PutLogEvents',
+            Resource: [
+              `arn:${this.partition}:logs:${this.region}:${this.account}:log-group:aws/spans:*`,
+              `arn:${this.partition}:logs:${this.region}:${this.account}:log-group:/aws/application-signals/data:*`,
+            ],
+            Condition: {
+              ArnLike: {
+                'aws:SourceArn': `arn:${this.partition}:xray:${this.region}:${this.account}:*`,
+              },
+              StringEquals: {
+                'aws:SourceAccount': this.account,
+              },
+            },
+          },
+        ],
+      }),
+    });
+
+    // Create the TransactionSearchConfig with dependency
+    const transactionSearchConfig = new xray.CfnTransactionSearchConfig(this, 'XRayTransactionSearchConfig', {
+      indexingPercentage: 100,
+    });
+
+    // Add the dependency to ensure Resource Policy is created first
+    transactionSearchConfig.addDependsOn(transactionSearchAccess);
+  }
+} 
+```
+
 
 ---
 
