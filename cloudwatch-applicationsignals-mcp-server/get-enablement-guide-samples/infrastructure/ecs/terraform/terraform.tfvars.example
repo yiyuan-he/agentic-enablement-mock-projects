@@ -1,0 +1,9 @@
+# Example Terraform variables file
+# Copy this file to terraform.tfvars and modify as needed
+
+app_name           = "my-app-ecs-terraform"
+image_name         = "my-app"
+language           = "nodejs"
+port               = 3000
+health_check_path  = "/health"
+service_name       = "my-app-ecs-terraform"
