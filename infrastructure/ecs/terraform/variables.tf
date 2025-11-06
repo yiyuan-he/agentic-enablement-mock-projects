@@ -24,10 +24,6 @@ variable "port" {
   type        = number
 }
 
-variable "app_directory" {
-  description = "Directory path to the application source code"
-  type        = string
-}
 
 variable "health_check_path" {
   description = "Health check endpoint path"

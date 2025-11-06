@@ -3,7 +3,6 @@
   "imageName": "dotnet-aspnetcore",
   "language": "dotnet",
   "port": 5000,
-  "appDirectory": "../../../sample-apps/dotnet/aspnetcore",
   "healthCheckPath": "/health",
   "serviceName": "dotnet-aspnetcore-ecs-cdk"
 }

@@ -5,6 +5,5 @@ app_name           = "my-app-ecs-terraform"
 image_name         = "my-app"
 language           = "nodejs"
 port               = 3000
-app_directory      = "../../../sample-apps/nodejs/express"
 health_check_path  = "/health"
 service_name       = "my-app-ecs-terraform"

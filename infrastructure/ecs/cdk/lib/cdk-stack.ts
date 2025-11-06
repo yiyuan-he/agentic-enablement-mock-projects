@@ -11,7 +11,6 @@ export interface AppConfig {
   imageName: string;
   language: string;
   port: number;
-  appDirectory: string;
   healthCheckPath: string;
   serviceName: string;
 }
