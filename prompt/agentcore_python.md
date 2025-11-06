@@ -1,14 +1,14 @@
-# AWS Bedrock Agent Core Runtime - OpenTelemetry Instrumentation Setup Guide
+# AWS Bedrock AgentCore Runtime - OpenTelemetry Instrumentation Setup Guide
 
 ## Overview
 
-A practical guide for enabling OpenTelemetry instrumentation in Python-based AWS Bedrock Agent Core Runtime projects to enhance observability of your AI agents.
+A practical guide for enabling OpenTelemetry instrumentation in Python-based AWS Bedrock AgentCore Runtime projects to enhance observability of your AI agents.
 
 ## Implementation Steps
 
 ### Step 1: Update IAM Execution Role Permissions
 
-Add X-Ray permissions to the Bedrock Agent Core IAM execution role.
+Add X-Ray permissions to the Bedrock AgentCore IAM execution role.
 
 #### **Find existing X-Ray permission policy:**
 ```typescript
@@ -157,6 +157,9 @@ export class XRayTransactionSearchStack extends cdk.Stack {
 
     // Add the dependency to ensure Resource Policy is created first
     transactionSearchConfig.addDependsOn(transactionSearchAccess);
+
+    // Set CloudFormation deletion policy to Retain
+    transactionSearchConfig.applyRemovalPolicy(cdk.RemovalPolicy.RETAIN);
   }
 } 
 ```
@@ -166,11 +169,11 @@ export class XRayTransactionSearchStack extends cdk.Stack {
 
 ## Completion
 
-After completing the above three steps, your Python-based AWS Bedrock Agent Core Runtime will automatically enable OpenTelemetry instrumentation, including:
+After completing the above three steps, your Python-based AWS Bedrock AgentCore Runtime will automatically enable OpenTelemetry instrumentation, including:
 
 - X-Ray distributed tracing
 - AWS Application Signals
 
 ---
 
-*Applicable to all Python container-based AWS Bedrock Agent Core Runtime projects*
+*Applicable to all Python container-based AWS Bedrock AgentCore Runtime projects*
