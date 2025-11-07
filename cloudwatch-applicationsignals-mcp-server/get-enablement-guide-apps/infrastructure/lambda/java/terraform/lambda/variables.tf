@@ -1,7 +1,7 @@
 variable "function_name" {
   type        = string
   description = "Name of lambda function / ALB"
-  default     = "awslabs-sample-java-terraform"
+  default     = "awslabs-lambda-java-terraform"
 }
 
 variable "runtime" {
