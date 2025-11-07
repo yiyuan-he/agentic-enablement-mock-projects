@@ -1,13 +1,13 @@
 variable "function_name" {
   type        = string
-  description = "Name of sample app function / ALB"
-  default     = "awslabs-sample-nodejs-terraform"
+  description = "Name of lambda function / ALB"
+  default     = "awslabs-sample-python-terraform"
 }
 
 variable "runtime" {
   type        = string
-  description = "NodeJS runtime version used for sample Lambda Function"
-  default     = "nodejs20.x"
+  description = "Python runtime version used for sample Lambda Function"
+  default     = "python3.12"
 }
 
 variable "architecture" {
