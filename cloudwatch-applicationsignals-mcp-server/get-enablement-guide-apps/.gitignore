@@ -1,0 +1,41 @@
+# CDK TypeScript compilation output
+infrastructure/ec2/cdk/**/*.js
+infrastructure/ec2/cdk/**/*.d.ts
+infrastructure/ec2/cdk/node_modules
+infrastructure/ec2/cdk/cdk.out
+infrastructure/ec2/cdk/.cdk.staging
+
+# CDK generated files
+cdk.context.json
+outputs.json
+
+# Build artifacts
+bin/
+obj/
+target/
+build/
+node_modules/
+__pycache__/
+*.zip
+
+# Python dependencies
+boto3/
+boto3-*.dist-info/
+botocore/
+botocore-*.dist-info/
+dateutil/
+jmespath/
+jmespath-*.dist-info/
+python_dateutil-*.dist-info/
+s3transfer/
+s3transfer-*.dist-info/
+six-*.dist-info/
+six.py
+urllib3/
+urllib3-*.dist-info/
+
+# Terraform files
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
