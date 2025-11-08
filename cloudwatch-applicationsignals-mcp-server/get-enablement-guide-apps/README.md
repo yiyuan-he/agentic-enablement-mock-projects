@@ -1,62 +1,202 @@
 # Get Enablement Guide Samples
 
-Sample infrastructure for testing the `get_enablement_guide` tool.
+## Overview
+These baseline applications are used to test an AI Agent's ability to automatically enable AWS Application Signals across different platforms via our MCP enablement tool.
 
-## Testing Requirements
+The testing flow is:
+1. **Baseline Setup:** Deploy infrastructure without Application Signals
+2. **Agent Modification:** AI Agent modifies IaC code to enable Application Signals
+3. **Verification:** Redeploy and verify Application Signals is enabled
 
-**Important:** All changes to this infrastructure should be tested to ensure the IaC and sample apps work correctly.
-
-## Deployment
-
-### Prerequisites
-
-- AWS CLI configured with appropriate credentials
+## Prerequisites
+- Assumption that developers are testing using MacOS
+- AWS CLI configured with appropriate credentials - we will use `us-east-1`
 - Node.js and npm installed
+- AWS Session Manager plugin ([installation instructions](https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-macos-overview.html))
 - AWS CDK CLI installed (`npm install -g aws-cdk`)
+- Terraform installed
+- Docker and Docker Buildx (for container platforms)
+- Language-specific tools:
+  - **Python:** Python 3.12 and `pip`
+  - **Java:** Java 17 and `mvn`
+  - **Node.js:** Node.js 20 and `npm`
 
-## Deploy EC2 CDK Sample
+## Platforms
 
-#### Step 1: Push Sample App to ECR
+### EC2
 
-Before deploying the CDK stack, you must build and push the Python Flask sample application to your ECR repository.
+#### Baseline Application Setup
+This testing infrastructure covers two deployment approaches:
+1. **Containerized (Docker)** - Applications run as Docker containers on EC2, with images pulled from Amazon ECR
+2. **Non-Containerized (Native)** - Applications run directly on the EC2 instance as systemd services, with code deployed from S3 via CDK Assets
 
-```bash
-# Navigate to the Python Flask sample app
-cd sample-apps/python/flask
+Both approaches serve as baseline setups **without** Application Signals enabled.
 
-# Set your AWS account and region
+#### Containerized Deployment (Docker)
+
+##### Build and Push Docker Images to ECR
+
+```shell
+# Navigate to app directory (see table below)
+cd <app-directory>
+
+# Set variables
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-export AWS_REGION=$(aws configure get region)
+export AWS_REGION=$(aws configure get region || echo "us-east-1")
+export ECR_REPO_NAME="<repo-name>" # See table below
+export ECR_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME"
+
+# Authenticate with ECR Public (for base images)
+aws ecr-public get-login-password --region us-east-1 | \
+  docker login --username AWS --password-stdin public.ecr.aws
+
+# Authenticate Docker with ECR
+aws ecr get-login-password --region $AWS_REGION | \
+  docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
 # Create ECR repository (if it doesn't exist)
-aws ecr create-repository --repository-name python-flask --region $AWS_REGION || true
+aws ecr create-repository --repository-name $ECR_REPO_NAME --region $AWS_REGION 2>/dev/null || true
 
-# Authenticate Docker to ECR
-aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-
-# Build and push the Docker image
-docker build -t python-flask .
-docker tag python-flask:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/python-flask:latest
-docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/python-flask:latest
+# Build multi-platform and push to ECR
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t $ECR_URI \
+  --push \
+  .
 ```
 
-#### Step 2: Deploy the CDK Stack
+**App Directory and ECR Repository Reference:**
+- Python Flask: Directory `docker-language-apps/python/flask`, Repo `python-flask`
+- Node.js Express: Directory `docker-language-apps/node/express`, Repo `nodejs-express`
+- Java Spring Boot: Directory `docker-language-apps/java/spring-boot`, Repo `java-springboot`
 
-```bash
-# Navigate to the CDK directory
-cd infrastructure/ec2/cdk
+##### Deploy Containerized Infrastructure
 
-# Install dependencies
+**Using CDK:**
+```shell
+cd infrastructure/ec2/cdk-docker
+
+# Install dependencies (first time only)
 npm install
 
-# Deploy the Python Flask stack
-cdk deploy PythonFlaskCdkStack
+# Deploy specific app stack (see table below)
+cdk deploy <stack-name>
 
-# Clean up when done
-cdk destroy PythonFlaskCdkStack
+# Or deploy all containerized stacks
+cdk deploy --all
 ```
 
-This deploys an EC2 instance running the containerized Python Flask sample application pulled from your ECR repository.
+**Using Terraform:**
+```shell
+cd infrastructure/ec2/terraform-docker
+
+terraform init
+terraform plan -var-file="config/<app-name>.tfvars"
+terraform apply -var-file="config/<app-name>.tfvars"
+```
+
+**CDK Stack Name Reference:**
+- Python Flask: `PythonFlaskCdkStack`
+- Node.js Express: `NodejsExpressCdkStack`
+- Java Spring Boot: `JavaSpringBootCdkStack`
+
+**Terraform Config File Reference:**
+- Python Flask: `config/python-flask.tfvars`
+- Node.js Express: `config/nodejs-express.tfvars`
+- Java Spring Boot: `config/java-springboot.tfvars`
+
+##### Verify Containerized Deployment
+
+After CDK deployment completes:
+
+###### 1. Connect to EC2 Instance
+
+Get the instance ID from CDK output, then connect via SSM Session Manager:
+
+```shell
+aws ssm start-session --target <instance-id>
+```
+
+###### 2. Verify Docker Container
+
+```shell
+sudo docker ps
+```
+
+Expected output: Container named `PythonFlaskCdk` (or respective app name) should be running
+
+Note: It may take a few minutes for the Docker to start on the EC2 instance.
+
+###### 3. Verify Application Processes
+
+```shell
+sudo docker top <container-name>
+```
+
+**Expected processes running:**
+- Main application process (varies by language - see table below)
+- `bash generate-traffic.sh` - Traffic generation script
+- `sleep 2` - Subprocess from traffic generator
+
+**Container Names & Main Processes:**
+- Python Flask: Container `PythonFlaskCdk`, Process `python app.py`
+- Node.js Express: Container `NodejsExpressCdk`, Process `node express-app.js`
+- Java Spring Boot: Container `JavaSpringBootCdk`, Process `java`
+
+###### 4. Test Endpoints
+
+```shell
+curl http://localhost:<app-port>/health
+
+curl http://localhost:<app-port>/api/buckets
+```
+
+**Expected response:** 
+- Health endpoint: `{"status":"healthy"}`
+- API endpoint: `S3:ListBuckets` response
+
+**Port Reference:**
+- Python Flask: `5000`
+- Node.js Express: `8080`
+- Java Spring Boot: `8080`
+
+##### Cleanup
+
+**Using CDK:**
+```shell
+cd infrastructure/ec2/cdk-docker
+
+# Destroy specific stack (see table below)
+cdk destroy <stack-name>
+```
+
+**Using Terraform:**
+```shell
+cd infrastructure/ec2/terraform-docker
+
+terraform destroy -var-file="<config-file>"
+```
+
+**Optional: Delete ECR Images and Repositories**
+```shell
+aws ecr delete-repository --repository-name <repo-name> --region $AWS_REGION --force
+```
+
+**Stack Names:**
+- Python Flask: `PythonFlaskCdkStack`
+- Node.js Express: `NodejsExpressCdkStack`
+- Java Spring Boot: `JavaSpringBootCdkStack`
+
+**Terraform Config Files:**
+- Python Flask: `config/python-flask.tfvars`
+- Node.js Express: `config/nodejs-express.tfvars`
+- Java Spring Boot: `config/java-springboot.tfvars`
+
+**ECR Repository Names:**
+- Python Flask: `python-flask`
+- Node.js Express: `nodejs-express`
+- Java Spring Boot: `java-springboot`
+
+# Everything beyond this point will be re-drafted
 
 ## Deploy Lambda Functions
 
