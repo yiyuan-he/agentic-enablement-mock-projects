@@ -1,9 +1,8 @@
 # CDK TypeScript compilation output
-infrastructure/ec2/cdk/**/*.js
-infrastructure/ec2/cdk/**/*.d.ts
-infrastructure/ec2/cdk/node_modules
-infrastructure/ec2/cdk/cdk.out
-infrastructure/ec2/cdk/.cdk.staging
+.cdk.staging
+cdk.out
+*.js
+*.d.ts
 
 # CDK generated files
 cdk.context.json
@@ -39,3 +38,33 @@ urllib3-*.dist-info/
 .terraform.lock.hcl
 terraform.tfstate
 terraform.tfstate.backup
+*.tfvars
+!terraform.tfvars.example
+!java-springboot.tfvars
+!python-flask.tfvars
+!nodejs-express.tfvars
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Parcel default cache directory
+.parcel-cache
+
+# npm
+npm-debug.log*
+.npm
+
+# Yarn
+yarn-error.log
+
+# dotenv environment variables file
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
