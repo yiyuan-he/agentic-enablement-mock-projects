@@ -1,0 +1,8 @@
+{
+  "appName": "PythonFlaskNativeCdk",
+  "language": "python",
+  "port": 5000,
+  "healthCheckPath": "/health",
+  "appPath": "../../../../native-language-apps/python/flask",
+  "serviceName": "python-flask-app"
+}
