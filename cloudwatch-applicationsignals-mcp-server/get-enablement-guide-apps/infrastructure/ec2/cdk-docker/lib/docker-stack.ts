@@ -3,7 +3,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
-export interface AppConfig {
+export interface DockerAppConfig {
   appName: string;
   imageName: string;
   language: string;
@@ -11,8 +11,8 @@ export interface AppConfig {
   healthCheckPath: string;
 }
 
-export class EC2AppStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, config: AppConfig, props?: cdk.StackProps) {
+export class EC2DockerAppStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, config: DockerAppConfig, props?: cdk.StackProps) {
     super(scope, id, props);
 
     // Construct ECR image URI using convention
