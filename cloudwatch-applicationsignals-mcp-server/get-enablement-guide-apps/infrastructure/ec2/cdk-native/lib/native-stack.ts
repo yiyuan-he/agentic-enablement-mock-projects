@@ -144,7 +144,7 @@ export class EC2NativeAppStack extends cdk.Stack {
       case 'nodejs':
         return ['yum install -y nodejs npm unzip'];
       case 'java':
-        return ['yum install -y java-17-amazon-corretto unzip'];
+        return ['yum install -y java-17-amazon-corretto maven unzip'];
       default:
         return ['yum install -y unzip'];
     }
