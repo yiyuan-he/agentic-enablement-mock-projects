@@ -196,6 +196,132 @@ aws ecr delete-repository --repository-name <repo-name> --region $AWS_REGION --f
 - Node.js Express: `nodejs-express`
 - Java Spring Boot: `java-springboot`
 
+#### Non-Containzerized Deployment (Native)
+
+For non-containerized deployments, application code from `native-language-apps/` is automatically uploaded to S3 by CDK/Terraform, then deployed to the EC2 instance and run as a systemd service. It is the same set of applications found in `docker-language-apps/`. The only difference is there are no `Dockerfile`s present, making it clear to AI Agents that this is a native deployment.
+
+##### Deploy Non-Containerized Infrastructure
+
+**Using CDK:**
+```shell
+cd infrastructure/ec2/cdk-native
+
+# Install dependencies (first time only)
+npm install
+
+# Deploy specific app stack (see table below)
+cdk deploy <stack-name>
+```
+
+**Using Terraform**:
+```shell
+cd infrastructure/ec2/terraform-native
+
+terraform init
+terraform plan -var-file="config/<config-file>"
+terraform apply -var-file="config/<config-file>"
+```
+
+**CDK Stack Name Reference:**
+- Python Flask: `PythonFlaskNativeCdkStack`
+- Node.js Express: `NodejsExpressNativeCdkStack`
+- Java Spring Boot: `JavaSpringBootNativeCdkStack`
+
+**Terraform Config File Reference:**
+- Python Flask: `config/python-flask.tfvars`
+- Node.js Express: `config/nodejs-express.tfvars`
+- Java Spring Boot: `config/java-springboot.tfvars`
+
+**App Directory Reference:**
+- Python Flask: `native-language-apps/python/flask`
+- Node.js Express: `native-language-apps/node/express`
+- Java Spring Boot: `native-language-apps/java/spring-boot`
+
+##### Verify Non-Containerized Deployment
+
+###### 1. Connect to EC2 Instance
+
+Get the instance ID from deployment output, then connect via SSM Session Manager:
+
+```shell
+aws ssm start-session --target <instance-id>
+```
+
+###### 2. Verify Systemd Service
+
+```shell
+sudo systemctl status <service-name>
+```
+
+Expected output: Service should be `active (running)`
+
+**Service Name Reference:**
+- Python Flask: `python-flask-app`
+- Node.js Express: `nodejs-express-app`
+- Java Spring Boot: `java-springboot-app`
+
+###### 3. Verify Application Processes
+
+```shell
+ps aux | grep -E "(python|node|java|generate-traffic)" | grep -v grep
+```
+
+**Expected processes running:**
+- Main application process
+- Traffic generation script (`generate-traffic.sh`)
+
+###### 4. Check Application Logs
+
+```shell
+sudo journalctl -u <service-name> -f
+```
+
+This shows real-time logs from the systemd service.
+
+###### 5. Test Endpoints
+
+```shell
+curl http://localhost:<app-port>/health
+
+curl http://localhost:<app-port>/api/buckets
+```
+
+**Expected response:**
+- Health endpoint: `{"status":"healthy"}`
+- API endpoint: `S3:ListBuckets` response
+
+**Port Reference:**
+- Python Flask: `5000`
+- Node.js Express: `8080`
+- Java Spring Boot: `8080`
+
+##### Cleanup
+
+**Using CDK:**
+```shell
+cd infrastructure/ec2/cdk-native
+
+cdk destroy <stack-name>
+```
+
+**Using Terraform:**
+```shell
+cd infrastructure/ec2/terraform-native
+
+terraform destroy -var-file="<config-file>"
+```
+
+**Stack Names:**
+- Python Flask: `PythonFlaskNativeCdkStack`
+- Node.js Express: `NodejsExpressNativeCdkStack`
+- Java Spring Boot: `JavaSpringBootNativeCdkStack`
+
+**Terraform Config Files:**
+- Python Flask: `config/python-flask.tfvars`
+- Node.js Express: `config/nodejs-express.tfvars`
+- Java Spring Boot: `config/java-springboot.tfvars`
+
+
 # Everything beyond this point will be re-drafted
 
 ## Deploy Lambda Functions
