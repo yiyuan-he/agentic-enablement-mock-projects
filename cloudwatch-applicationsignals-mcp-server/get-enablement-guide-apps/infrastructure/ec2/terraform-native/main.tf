@@ -123,7 +123,7 @@ locals {
   }
 
   start_commands = {
-    python = "/usr/bin/python3 /opt/app/app.py"
+    python = contains(split("-", var.service_name), "django") ? "/usr/bin/gunicorn --bind 0.0.0.0:${var.port} --workers 2 djangoapp.wsgi:application" : "/usr/bin/python3 /opt/app/app.py"
     nodejs = "/usr/bin/node /opt/app/express-app.js"
     java   = "/usr/bin/java -jar /opt/app/target/*.jar"
   }

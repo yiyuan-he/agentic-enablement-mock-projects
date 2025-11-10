@@ -1,0 +1,8 @@
+{
+  "appName": "PythonDjangoNativeCdk",
+  "language": "python",
+  "port": 8000,
+  "healthCheckPath": "/health",
+  "appPath": "../../../../native-language-apps/python/django",
+  "serviceName": "python-django-app"
+}

@@ -1,0 +1,8 @@
+{
+  "appName": "NodejsExpressNativeCdk",
+  "language": "nodejs",
+  "port": 8080,
+  "healthCheckPath": "/health",
+  "appPath": "../../../../native-language-apps/node/express",
+  "serviceName": "nodejs-express-app"
+}

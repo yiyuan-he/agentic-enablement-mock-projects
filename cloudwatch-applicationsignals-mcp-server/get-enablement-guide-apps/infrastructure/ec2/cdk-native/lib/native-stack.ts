@@ -44,7 +44,7 @@ export class EC2NativeAppStack extends cdk.Stack {
 
     const userData = ec2.UserData.forLinux();
     const installCommands = this.getInstallCommands(config.language);
-    const startCommand = this.getStartCommand(config.language, config.port);
+    const startCommand = this.getStartCommand(config.language, config.port, config.serviceName);
 
     userData.addCommands(
       '#!/bin/bash',
@@ -172,9 +172,12 @@ export class EC2NativeAppStack extends cdk.Stack {
     }
   }
 
-  private getStartCommand(language: string, port: number): string {
+  private getStartCommand(language: string, port: number, serviceName: string): string {
     switch (language) {
       case 'python':
+        if (serviceName.includes('django')) {
+          return `/usr/bin/gunicorn --bind 0.0.0.0:${port} --workers 2 djangoapp.wsgi:application`;
+        }
         return '/usr/bin/python3 /opt/app/app.py';
       case 'nodejs':
         return '/usr/bin/node /opt/app/express-app.js';

@@ -1,0 +1,8 @@
+{
+  "appName": "JavaSpringBootNativeCdk",
+  "language": "java",
+  "port": 8080,
+  "healthCheckPath": "/health",
+  "appPath": "../../../../native-language-apps/java/spring-boot",
+  "serviceName": "java-springboot-app"
+}
