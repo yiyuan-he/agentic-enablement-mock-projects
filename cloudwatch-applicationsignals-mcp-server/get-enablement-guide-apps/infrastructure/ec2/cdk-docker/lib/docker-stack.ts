@@ -15,15 +15,12 @@ export class EC2DockerAppStack extends cdk.Stack {
   constructor(scope: Construct, id: string, config: DockerAppConfig, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // Construct ECR image URI using convention
     const ecrImageUri = `${this.account}.dkr.ecr.${this.region}.amazonaws.com/${config.imageName}:latest`;
 
-    // Use default VPC
     const vpc = ec2.Vpc.fromLookup(this, 'DefaultVPC', {
       isDefault: true,
     });
 
-    // IAM role for EC2 with S3 read permissions, ECR pull, and SSM access
     const role = new iam.Role(this, 'AppRole', {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
       managedPolicies: [
@@ -33,51 +30,41 @@ export class EC2DockerAppStack extends cdk.Stack {
       ],
     });
 
-    // Security group
     const securityGroup = new ec2.SecurityGroup(this, 'AppSG', {
       vpc,
       description: `Security group for ${config.appName}`,
       allowAllOutbound: true,
     });
 
-    // User data to pull Docker image and run container
     const userData = ec2.UserData.forLinux();
     userData.addCommands(
       '#!/bin/bash',
       'set -e',
       '',
-      '# Update and install dependencies',
       'yum update -y',
       'yum install -y docker',
       '',
-      '# Start Docker service',
       'systemctl start docker',
       'systemctl enable docker',
       'usermod -a -G docker ec2-user',
       '',
-      '# Authenticate with ECR',
       `aws ecr get-login-password --region ${this.region} | docker login --username AWS --password-stdin ${this.account}.dkr.ecr.${this.region}.amazonaws.com`,
       '',
-      '# Pull Docker image',
       `docker pull ${ecrImageUri}`,
       '',
-      '# Run container',
       `docker run -d --name ${config.appName} \\`,
       `  -p ${config.port}:${config.port} \\`,
       `  -e PORT=${config.port} \\`,
       `  -e AWS_REGION=${this.region} \\`,
       `  ${ecrImageUri}`,
       '',
-      '# Wait for application to start',
       'sleep 10',
       '',
-      '# Start traffic generator inside container',
       `docker exec -d ${config.appName} bash /app/generate-traffic.sh`,
       '',
       'echo "Application deployed and traffic generation started"'
     );
 
-    // EC2 instance
     const instance = new ec2.Instance(this, 'AppInstance', {
       vpc,
       instanceType: ec2.InstanceType.of(
@@ -93,7 +80,6 @@ export class EC2DockerAppStack extends cdk.Stack {
       },
     });
 
-    // Outputs
     new cdk.CfnOutput(this, 'InstanceId', {
       value: instance.instanceId,
       description: 'EC2 Instance ID',

@@ -18,17 +18,14 @@ export class EC2NativeAppStack extends cdk.Stack {
   constructor(scope: Construct, id: string, config: NativeAppConfig, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // Upload app code to S3 as an asset
     const appAsset = new s3_assets.Asset(this, 'AppCode', {
       path: path.join(__dirname, config.appPath),
     });
 
-    // Use default VPC
     const vpc = ec2.Vpc.fromLookup(this, 'DefaultVPC', {
       isDefault: true,
     });
 
-    // IAM role for EC2 with S3 read permissions and SSM access
     const role = new iam.Role(this, 'AppRole', {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
       managedPolicies: [
@@ -37,20 +34,15 @@ export class EC2NativeAppStack extends cdk.Stack {
       ],
     });
 
-    // Grant read permissions for the app asset
     appAsset.grantRead(role);
 
-    // Security group
     const securityGroup = new ec2.SecurityGroup(this, 'AppSG', {
       vpc,
       description: `Security group for ${config.appName}`,
       allowAllOutbound: true,
     });
 
-    // User data to deploy app natively
     const userData = ec2.UserData.forLinux();
-
-    // Build user data based on language
     const installCommands = this.getInstallCommands(config.language);
     const startCommand = this.getStartCommand(config.language, config.port);
 
@@ -58,21 +50,17 @@ export class EC2NativeAppStack extends cdk.Stack {
       '#!/bin/bash',
       'set -e',
       '',
-      '# Update and install dependencies',
       'yum update -y',
       ...installCommands,
       '',
-      '# Download app from S3',
       'mkdir -p /opt/app',
       `aws s3 cp s3://${appAsset.s3BucketName}/${appAsset.s3ObjectKey} /tmp/app.zip`,
       'cd /opt/app',
       'unzip /tmp/app.zip',
       'chown -R ec2-user:ec2-user /opt/app',
       '',
-      '# Install application dependencies',
       ...this.getDepInstallCommands(config.language),
       '',
-      '# Create systemd service file',
       `cat > /etc/systemd/system/${config.serviceName}.service << 'EOF'`,
       '[Unit]',
       `Description=${config.appName}`,
@@ -92,21 +80,17 @@ export class EC2NativeAppStack extends cdk.Stack {
       'WantedBy=multi-user.target',
       'EOF',
       '',
-      '# Enable and start the service',
       'systemctl daemon-reload',
       `systemctl enable ${config.serviceName}`,
       `systemctl start ${config.serviceName}`,
       '',
-      '# Wait for application to start',
       'sleep 10',
       '',
-      '# Start traffic generator in background',
       'sudo -u ec2-user bash /opt/app/generate-traffic.sh &',
       '',
       'echo "Application deployed and traffic generation started"'
     );
 
-    // EC2 instance
     const instance = new ec2.Instance(this, 'AppInstance', {
       vpc,
       instanceType: ec2.InstanceType.of(
@@ -122,7 +106,6 @@ export class EC2NativeAppStack extends cdk.Stack {
       },
     });
 
-    // Outputs
     new cdk.CfnOutput(this, 'InstanceId', {
       value: instance.instanceId,
       description: 'EC2 Instance ID',

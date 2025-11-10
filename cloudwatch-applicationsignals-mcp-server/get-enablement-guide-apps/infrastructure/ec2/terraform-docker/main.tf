@@ -12,7 +12,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Data source for default VPC
 data "aws_vpc" "default" {
   default = true
 }
@@ -24,7 +23,6 @@ data "aws_subnets" "default" {
   }
 }
 
-# Data source for latest Amazon Linux 2023 AMI
 data "aws_ami" "amazon_linux_2023" {
   most_recent = true
   owners      = ["amazon"]
@@ -40,7 +38,6 @@ data "aws_ami" "amazon_linux_2023" {
   }
 }
 
-# IAM role for EC2 instance
 resource "aws_iam_role" "app_role" {
   name = "${var.app_name}-role"
 
@@ -58,7 +55,6 @@ resource "aws_iam_role" "app_role" {
   })
 }
 
-# Attach managed policies to the role
 resource "aws_iam_role_policy_attachment" "s3_readonly" {
   role       = aws_iam_role.app_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
@@ -74,13 +70,11 @@ resource "aws_iam_role_policy_attachment" "ecr_readonly" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-# IAM instance profile
 resource "aws_iam_instance_profile" "app_profile" {
   name = "${var.app_name}-profile"
   role = aws_iam_role.app_role.name
 }
 
-# Security group
 resource "aws_security_group" "app_sg" {
   name        = "${var.app_name}-sg"
   description = "Security group for ${var.app_name}"
@@ -98,10 +92,8 @@ resource "aws_security_group" "app_sg" {
   }
 }
 
-# Get current AWS account ID
 data "aws_caller_identity" "current" {}
 
-# User data script
 locals {
   ecr_image_uri = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/${var.image_name}:latest"
 
@@ -109,39 +101,31 @@ locals {
               #!/bin/bash
               set -e
 
-              # Update and install dependencies
               yum update -y
               yum install -y docker
 
-              # Start Docker service
               systemctl start docker
               systemctl enable docker
               usermod -a -G docker ec2-user
 
-              # Authenticate with ECR
               aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com
 
-              # Pull Docker image
               docker pull ${local.ecr_image_uri}
 
-              # Run container
               docker run -d --name ${var.app_name} \
                 -p ${var.port}:${var.port} \
                 -e PORT=${var.port} \
                 -e AWS_REGION=${var.aws_region} \
                 ${local.ecr_image_uri}
 
-              # Wait for application to start
               sleep 10
 
-              # Start traffic generator inside container
               docker exec -d ${var.app_name} bash /app/generate-traffic.sh
 
               echo "Application deployed and traffic generation started"
               EOF
 }
 
-# EC2 instance
 resource "aws_instance" "app" {
   ami                    = data.aws_ami.amazon_linux_2023.id
   instance_type          = "t3.small"
