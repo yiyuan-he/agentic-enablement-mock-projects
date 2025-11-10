@@ -321,6 +321,102 @@ terraform destroy -var-file="<config-file>"
 - Node.js Express: `config/nodejs-express.tfvars`
 - Java Spring Boot: `config/java-springboot.tfvars`
 
+### Lambda
+
+#### Baseline Application Setup
+This testing infrastructure deploys Lambda fucntions fronted by an Application Load Balancer. The Lambda functions perform S3 bucket listing operations.
+
+Available languages: Python, Java, Node.js, .NET
+
+#### Deploy Lambda Infrastructure
+
+**Using CDK:**
+```shell
+cd infrastructure/lambda/<language>/cdk
+
+# Install dependencies (first time only)
+npm install
+
+# Build function (language-specific - see table below)
+cd ../sample-app
+<build-commands>
+
+# Deploy
+cd ../cdk
+npm run build
+npm run deploy
+```
+
+**Using Terraform:**
+```shell
+cd infrastructure/lambda/<language>/terraform
+
+# Build function (language-specific - see table below)
+cd ../sample-app
+<build-commands>
+
+# Deploy
+cd ../terraform/lambda
+terraform init
+terraform apply
+```
+
+**Language-Specific Build Commands:**
+
+Python: 
+```shell
+pip install -r requirements.txt -t .
+zip -r function.zip . --exclude="*.pyc" "__pycache__/*"
+```
+Java:
+```shell
+mvn clean package
+```
+Node.js:
+```shell
+npm install
+npm run compile
+```
+.NET: 
+```shell
+dotnet publish -c Release -o bin/Release/net8.0/publish
+cd bin/Release/net8.0/publish
+zip -r ../../../../function.zip .
+```
+
+**Runtime Details:**
+- **Python:** Python 3.12, **Handler:** `lambda_function.lambda_handler`
+- **Java:** Java 17, **Handler:** `com.example.Handler::handleRequest`
+- **Node.js:** Node.js 20, **Handler:** `index.handler`
+- **.NET:** .NET 8, **Handler:** `LambdaSample::LambdaSample.Function::FunctionHandler`
+
+#### Verify Lambda Deployment
+
+After deployment completes, the ALB URL will be in the outputs.
+
+**Test the endpoint:**
+```shell
+# Get ALB URL from CDK output or Terraform output
+curl http://<alb-dns-name>
+```
+
+**Expected response:** HTML page displaying: `(Python) Hello lambda - found X buckets.` (or respective language)
+
+#### Cleanup
+
+**Using CDK:**
+```shell
+cd infrastructure/lambda/<language>/cdk
+
+npm run destroy
+```
+
+**Using Terraform:**
+```shell
+cd infrastructure/lambda/<language>/lambda
+
+terraform destroy
+```
 
 # Everything beyond this point will be re-drafted
 
