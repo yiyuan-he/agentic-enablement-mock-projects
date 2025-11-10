@@ -66,6 +66,7 @@ docker buildx build --platform linux/amd64,linux/arm64 \
 
 **App Directory and ECR Repository Reference:**
 - Python Flask: Directory `docker-language-apps/python/flask`, Repo `python-flask`
+- Python Django: Directory `docker-language-apps/python/django`, Repo `python-django`
 - Node.js Express: Directory `docker-language-apps/node/express`, Repo `nodejs-express`
 - Java Spring Boot: Directory `docker-language-apps/java/spring-boot`, Repo `java-springboot`
 
@@ -96,11 +97,13 @@ terraform apply -var-file="config/<app-name>.tfvars"
 
 **CDK Stack Name Reference:**
 - Python Flask: `PythonFlaskCdkStack`
+- Python Django: `PythonDjangoCdkStack`
 - Node.js Express: `NodejsExpressCdkStack`
 - Java Spring Boot: `JavaSpringBootCdkStack`
 
 **Terraform Config File Reference:**
 - Python Flask: `config/python-flask.tfvars`
+- Python Django: `config/python-django.tfvars`
 - Node.js Express: `config/nodejs-express.tfvars`
 - Java Spring Boot: `config/java-springboot.tfvars`
 
@@ -137,10 +140,15 @@ sudo docker top <container-name>
 - `bash generate-traffic.sh` - Traffic generation script
 - `sleep 2` - Subprocess from traffic generator
 
-**Container Names & Main Processes:**
-- Python Flask: Container `PythonFlaskCdk`, Process `python app.py`
-- Node.js Express: Container `NodejsExpressCdk`, Process `node express-app.js`
-- Java Spring Boot: Container `JavaSpringBootCdk`, Process `java`
+**Container Names:**
+- CDK: `PythonFlaskCdk`, `PythonDjangoCdk`, `NodejsExpressCdk`, `JavaSpringBootCdk`
+- Terraform: `PythonFlaskTerraform`, `PythonDjangoTerraform`, `NodejsExpressTerraform`, `JavaSpringBootTerraform`
+
+**Main Processes:**
+- Python Flask: `python app.py`
+- Python Django: `gunicorn`
+- Node.js Express: `node express-app.js`
+- Java Spring Boot: `java`
 
 ###### 4. Test Endpoints
 
@@ -156,6 +164,7 @@ curl http://localhost:<app-port>/api/buckets
 
 **Port Reference:**
 - Python Flask: `5000`
+- Python Django: `8000`
 - Node.js Express: `8080`
 - Java Spring Boot: `8080`
 
@@ -183,16 +192,19 @@ aws ecr delete-repository --repository-name <repo-name> --region $AWS_REGION --f
 
 **Stack Names:**
 - Python Flask: `PythonFlaskCdkStack`
+- Python Django: `PythonDjangoCdkStack`
 - Node.js Express: `NodejsExpressCdkStack`
 - Java Spring Boot: `JavaSpringBootCdkStack`
 
 **Terraform Config Files:**
 - Python Flask: `config/python-flask.tfvars`
+- Python Django: `config/python-django.tfvars`
 - Node.js Express: `config/nodejs-express.tfvars`
 - Java Spring Boot: `config/java-springboot.tfvars`
 
 **ECR Repository Names:**
 - Python Flask: `python-flask`
+- Python Django: `python-django`
 - Node.js Express: `nodejs-express`
 - Java Spring Boot: `java-springboot`
 
@@ -292,6 +304,7 @@ curl http://localhost:<app-port>/api/buckets
 
 **Port Reference:**
 - Python Flask: `5000`
+- Python Django: `8000`
 - Node.js Express: `8080`
 - Java Spring Boot: `8080`
 
