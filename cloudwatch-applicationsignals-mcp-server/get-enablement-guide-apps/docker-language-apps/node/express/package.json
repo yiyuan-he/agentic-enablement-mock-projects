@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "node express-app.js"
+    "start": "node app.js"
   },
   "private": true,
   "keywords": [],

@@ -13,9 +13,10 @@
 # limitations under the License.
 
 import boto3
+import json
 import os
 from botocore.exceptions import ClientError
-from flask import Flask, jsonify
+from flask import Flask, Response
 
 
 app = Flask(__name__)
@@ -28,7 +29,8 @@ s3_client = boto3.client('s3', region_name=AWS_REGION)
 @app.route('/health')
 def health():
     """Health check endpoint that returns the service status."""
-    return jsonify({'status': 'healthy'})
+    app.logger.info('Health check endpoint called')
+    return Response(json.dumps({'status': 'healthy'}) + '\n', mimetype='application/json')
 
 
 @app.route('/api/buckets')
@@ -37,10 +39,11 @@ def list_buckets():
     try:
         response = s3_client.list_buckets()
         buckets = [bucket['Name'] for bucket in response.get('Buckets', [])]
-        return jsonify({'bucket_count': len(buckets), 'buckets': buckets})
+        app.logger.info(f'Successfully listed {len(buckets)} S3 buckets')
+        return Response(json.dumps({'bucket_count': len(buckets), 'buckets': buckets}) + '\n', mimetype='application/json')
     except ClientError as e:
         app.logger.error(f'S3 client error: {str(e)}')
-        return jsonify({'error': 'Failed to retrieve S3 buckets'}), 500
+        return Response(json.dumps({'error': 'Failed to retrieve S3 buckets'}) + '\n', mimetype='application/json'), 500
 
 
 if __name__ == '__main__':

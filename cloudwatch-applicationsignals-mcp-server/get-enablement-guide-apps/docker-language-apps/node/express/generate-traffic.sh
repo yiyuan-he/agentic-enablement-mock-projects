@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Traffic generator script for Flask application
-PORT=${PORT:-5000}
+# Traffic generator script for Express application
+PORT=${PORT:-8080}
 BASE_URL="http://localhost:${PORT}"
 
 echo "Starting continuous traffic generation to ${BASE_URL}"

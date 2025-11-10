@@ -180,7 +180,7 @@ export class EC2NativeAppStack extends cdk.Stack {
         }
         return '/usr/bin/python3 /opt/app/app.py';
       case 'nodejs':
-        return '/usr/bin/node /opt/app/express-app.js';
+        return '/usr/bin/node /opt/app/app.js';
       case 'java':
         return `/bin/bash -c '/usr/bin/java -jar /opt/app/target/*.jar'`;
       default:

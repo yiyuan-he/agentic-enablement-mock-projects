@@ -17,9 +17,7 @@ COPY . ./
 RUN npm install
 
 # Expose the port that the app will run on
-EXPOSE 8000
-ENV SAMPLE_APP_PORT=8080
-ENV SAMPLE_APP_ADDRESS=0.0.0.0
+EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
