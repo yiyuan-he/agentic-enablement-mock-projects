@@ -272,6 +272,7 @@ Expected output: Service should be `active (running)`
 
 **Service Name Reference:**
 - Python Flask: `python-flask-app`
+- Python Django: `python-django-app`
 - Node.js Express: `nodejs-express-app`
 - Java Spring Boot: `java-springboot-app`
 
@@ -329,11 +330,13 @@ terraform destroy -var-file="<config-file>"
 
 **Stack Names:**
 - Python Flask: `PythonFlaskNativeCdkStack`
+- Python Django: `PythonDjangoNativeCdkStack`
 - Node.js Express: `NodejsExpressNativeCdkStack`
 - Java Spring Boot: `JavaSpringBootNativeCdkStack`
 
 **Terraform Config Files:**
 - Python Flask: `config/python-flask.tfvars`
+- Python Django: `config/python-django.tfvars`
 - Node.js Express: `config/nodejs-express.tfvars`
 - Java Spring Boot: `config/java-springboot.tfvars`
 
