@@ -9,8 +9,6 @@ infrastructure/ec2/cdk/.cdk.staging
 node_modules/
 .cdk.staging
 cdk.out
-*.js
-*.d.ts
 
 # CDK generated files
 cdk.context.json
