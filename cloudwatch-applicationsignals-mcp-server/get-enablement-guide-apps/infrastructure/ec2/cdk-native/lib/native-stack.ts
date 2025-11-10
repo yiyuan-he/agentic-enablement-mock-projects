@@ -182,7 +182,7 @@ export class EC2NativeAppStack extends cdk.Stack {
       case 'nodejs':
         return '/usr/bin/node /opt/app/express-app.js';
       case 'java':
-        return `/usr/bin/java -jar /opt/app/target/*.jar`;
+        return `/bin/bash -c '/usr/bin/java -jar /opt/app/target/*.jar'`;
       default:
         return '';
     }
