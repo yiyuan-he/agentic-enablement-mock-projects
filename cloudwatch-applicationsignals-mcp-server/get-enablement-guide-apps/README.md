@@ -294,6 +294,12 @@ sudo journalctl -u <service-name> -f
 
 This shows real-time logs from the systemd service.
 
+**Service Name Reference:**
+- Python Flask: `python-flask-app`
+- Python Django: `python-django-app`
+- Node.js Express: `nodejs-express-app`
+- Java Spring Boot: `java-springboot-app`
+
 ###### 5. Test Endpoints
 
 ```shell
