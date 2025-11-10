@@ -236,16 +236,19 @@ terraform apply -var-file="config/<config-file>"
 
 **CDK Stack Name Reference:**
 - Python Flask: `PythonFlaskNativeCdkStack`
+- Python Django: `PythonDjangoNativeCdkStack`
 - Node.js Express: `NodejsExpressNativeCdkStack`
 - Java Spring Boot: `JavaSpringBootNativeCdkStack`
 
 **Terraform Config File Reference:**
 - Python Flask: `config/python-flask.tfvars`
+- Python Django: `config/python-django.tfvars`
 - Node.js Express: `config/nodejs-express.tfvars`
 - Java Spring Boot: `config/java-springboot.tfvars`
 
 **App Directory Reference:**
 - Python Flask: `native-language-apps/python/flask`
+- Python Django: `native-language-apps/python/django`
 - Node.js Express: `native-language-apps/node/express`
 - Java Spring Boot: `native-language-apps/java/spring-boot`
 
