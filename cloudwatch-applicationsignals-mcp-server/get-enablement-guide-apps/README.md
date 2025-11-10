@@ -158,9 +158,9 @@ curl http://localhost:<app-port>/health
 curl http://localhost:<app-port>/api/buckets
 ```
 
-**Expected response:** 
+**Expected response:**
 - Health endpoint: `{"status":"healthy"}`
-- API endpoint: `S3:ListBuckets` response
+- API endpoint: `{"bucket_count": X, "buckets": ["bucket1", "bucket2", ...]}`
 
 **Port Reference:**
 - Python Flask: `5000`
@@ -300,7 +300,7 @@ curl http://localhost:<app-port>/api/buckets
 
 **Expected response:**
 - Health endpoint: `{"status":"healthy"}`
-- API endpoint: `S3:ListBuckets` response
+- API endpoint: `{"bucket_count": X, "buckets": ["bucket1", "bucket2", ...]}`
 
 **Port Reference:**
 - Python Flask: `5000`
