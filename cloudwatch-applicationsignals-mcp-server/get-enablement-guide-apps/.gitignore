@@ -15,7 +15,6 @@ cdk.context.json
 outputs.json
 
 # Build artifacts
-bin/
 obj/
 target/
 build/
