@@ -3,6 +3,5 @@
   "imageName": "python-flask",
   "language": "python",
   "port": 5000,
-  "healthCheckPath": "/health",
-  "serviceName": "python-flask-ecs-cdk"
+  "healthCheckPath": "/health"
 }

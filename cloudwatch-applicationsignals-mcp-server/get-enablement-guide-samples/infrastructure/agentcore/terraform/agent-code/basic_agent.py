@@ -4,8 +4,8 @@ from bedrock_agentcore.runtime import BedrockAgentCoreApp
 
 app = BedrockAgentCoreApp()
 
-def create_basic_agent() -> Agent:
-    """Create a basic agent with simple functionality"""
+def create_agent() -> Agent:
+    """Create an agent with simple functionality"""
     system_prompt = """You are a helpful assistant. Answer questions clearly and concisely."""
 
     return Agent(
@@ -21,7 +21,7 @@ async def invoke(payload=None):
         query = payload.get("prompt", "Hello, how are you?") if payload else "Hello, how are you?"
 
         # Create and use the agent
-        agent = create_basic_agent()
+        agent = create_agent()
         response = agent(query)
 
         return {

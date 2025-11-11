@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import aws_cdk as cdk
-from basic_runtime_stack import BasicRuntimeStack
+from basic_runtime_stack import AgentCoreRuntimeStack
 
 app = cdk.App()
-BasicRuntimeStack(app, "BasicAgentDemo")
+AgentCoreRuntimeStack(app, "BasicAgent")
 
 app.synth()

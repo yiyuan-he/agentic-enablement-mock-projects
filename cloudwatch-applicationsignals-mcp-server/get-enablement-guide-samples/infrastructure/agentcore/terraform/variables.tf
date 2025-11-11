@@ -1,7 +1,7 @@
 variable "stack_name" {
   description = "Name of the stack (corresponds to CDK stack name)"
   type        = string
-  default     = "BasicRuntimeStack"
+  default     = "AgentCoreRuntimeStack"
 }
 
 variable "aws_region" {

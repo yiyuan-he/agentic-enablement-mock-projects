@@ -1,12 +1,9 @@
-FROM public.ecr.aws/docker/library/python:3.11-slim
+FROM public.ecr.aws/docker/library/python:3.11
 
 WORKDIR /app
 
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-
-ENV AWS_REGION=us-west-2
-ENV AWS_DEFAULT_REGION=us-west-2
 
 # Create non-root user
 RUN useradd -m -u 1000 bedrock_agentcore

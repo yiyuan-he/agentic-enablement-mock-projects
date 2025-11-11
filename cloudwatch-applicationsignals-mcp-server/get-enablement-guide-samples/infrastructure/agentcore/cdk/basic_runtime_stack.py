@@ -18,7 +18,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'infra_utils'))
 from agentcore_role import AgentCoreRole
 
-class BasicRuntimeStack(Stack):
+class AgentCoreRuntimeStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)

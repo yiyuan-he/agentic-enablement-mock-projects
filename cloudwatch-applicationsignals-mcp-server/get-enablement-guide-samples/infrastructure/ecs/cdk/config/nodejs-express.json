@@ -3,6 +3,5 @@
   "imageName": "nodejs-express",
   "language": "nodejs",
   "port": 3000,
-  "healthCheckPath": "/health",
-  "serviceName": "nodejs-express-ecs-cdk"
+  "healthCheckPath": "/health"
 }
