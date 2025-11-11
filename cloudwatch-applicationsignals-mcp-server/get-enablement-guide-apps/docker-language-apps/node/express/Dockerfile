@@ -24,12 +24,10 @@ ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=8080
 
-# Create non-root user for security
-RUN addgroup -g 1000 appuser && \
-    adduser -D -u 1000 -G appuser appuser && \
-    chown -R appuser:appuser /app
+# Change ownership to the built-in node user
+RUN chown -R node:node /app
 
-USER appuser
+USER node
 
 # Expose the port that the app will run on
 EXPOSE 8080
