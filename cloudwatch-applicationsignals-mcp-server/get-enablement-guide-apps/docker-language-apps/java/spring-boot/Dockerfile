@@ -13,19 +13,25 @@ RUN mvn clean package -DskipTests
 
 FROM public.ecr.aws/docker/library/amazoncorretto:17-alpine
 
-RUN apk add --no-cache curl bash
+RUN apk add --no-cache curl bash && \
+    addgroup -g 1001 -S appuser && \
+    adduser -u 1001 -S appuser -G appuser
 
 WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
 COPY generate-traffic.sh .
 
-RUN chmod +x generate-traffic.sh
+RUN chmod +x generate-traffic.sh && \
+    chown -R appuser:appuser /app
 
-EXPOSE 8080
+USER appuser
+
 ENV PORT=8080
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
+EXPOSE 8080
 
-CMD ["java", "-jar", "app.jar"]
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/health || exit 1
+
+CMD ["sh", "-c", "java ${JAVA_OPTS:--XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError} -jar app.jar"]
