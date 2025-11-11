@@ -4,9 +4,12 @@ const express = require('express');;
 const { S3Client, ListBucketsCommand } = require('@aws-sdk/client-s3');
 const logger = require('pino')()
 
+const HOST = process.env.HOST || '0.0.0.0';
 const PORT = parseInt(process.env.PORT || '8080', 10);
 
 const app = express();
+
+const s3Client = new S3Client({ region: 'us-east-1' });
 
 app.get('/', (req, res) => {
   healthCheck(res);
@@ -22,7 +25,6 @@ function healthCheck(res) {
 }
 
 app.get('/api/buckets', async (req, res) => {
-  const s3Client = new S3Client({ region: 'us-east-1' });
   try {
     const data = await s3Client.send(new ListBucketsCommand({}));
     const buckets = data.Buckets.map(bucket => bucket.Name);
@@ -41,6 +43,6 @@ app.get('/api/buckets', async (req, res) => {
   }
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Listening for requests on 0.0.0.0:${PORT}`);
+app.listen(PORT, HOST, () => {
+  logger.info(`Listening for requests on ${HOST}:${PORT}`);
 });
